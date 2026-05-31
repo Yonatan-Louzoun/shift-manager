@@ -428,4 +428,292 @@
                 const dateKey = formatDateKey(currentDate);
 
                 const dayCard = document.createElement('div');
-                dayCard.className =
+                dayCard.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col';
+                
+                // האם היום?
+                const isToday = dateKey === formatDateKey(new Date());
+                const headerClass = isToday ? 'bg-primary-50 border-b border-primary-100' : 'bg-slate-50 border-b border-slate-200';
+                
+                dayCard.innerHTML = `
+                    <div class="${headerClass} p-3 text-center">
+                        <div class="font-bold text-slate-800">${dayNames[i]}</div>
+                        <div class="text-xs text-slate-500">${formatDateDisplay(currentDate)}</div>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col gap-2"></div>
+                `;
+                
+                const shiftsContainer = dayCard.querySelector('.p-3.flex-1');
+
+                shifts.forEach(shift => {
+                    const shiftFullKey = `${dateKey}_${shift.id}`;
+                    const isChecked = empConstraints.includes(shiftFullKey);
+                    
+                    const label = document.createElement('label');
+                    label.className = `flex items-center p-2 rounded-lg cursor-pointer transition border ${isChecked ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100 hover:bg-slate-50'}`;
+                    
+                    label.innerHTML = `
+                        <input type="checkbox" class="w-4 h-4 text-red-500 rounded border-slate-300 focus:ring-red-500 ml-3" 
+                            ${isChecked ? 'checked' : ''} 
+                            onchange="toggleConstraint('${emp}', '${shiftFullKey}', this.checked, this.parentElement)">
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold ${isChecked ? 'text-red-700' : 'text-slate-700'} flex items-center gap-1">
+                                <i data-lucide="${shift.icon}" class="w-3 h-3"></i> ${shift.name}
+                            </div>
+                        </div>
+                    `;
+                    shiftsContainer.appendChild(label);
+                });
+
+                grid.appendChild(dayCard);
+            }
+        }
+
+        function toggleConstraint(emp, shiftFullKey, isChecked, labelElement) {
+            if (!db.constraints[emp]) db.constraints[emp] = [];
+            
+            if (isChecked) {
+                if (!db.constraints[emp].includes(shiftFullKey)) db.constraints[emp].push(shiftFullKey);
+                labelElement.className = 'flex items-center p-2 rounded-lg cursor-pointer transition border bg-red-50 border-red-200';
+                labelElement.querySelector('.font-semibold').className = 'text-sm font-semibold text-red-700 flex items-center gap-1';
+            } else {
+                db.constraints[emp] = db.constraints[emp].filter(k => k !== shiftFullKey);
+                labelElement.className = 'flex items-center p-2 rounded-lg cursor-pointer transition border bg-white border-slate-100 hover:bg-slate-50';
+                labelElement.querySelector('.font-semibold').className = 'text-sm font-semibold text-slate-700 flex items-center gap-1';
+            }
+            saveData();
+        }
+
+        // --- Schedule Logic ---
+        function changeScheduleWeek(offset) {
+            currentScheduleDate.setDate(currentScheduleDate.getDate() + (offset * 7));
+            renderSchedule();
+            lucide.createIcons();
+        }
+
+        function renderSchedule() {
+            const thead = document.getElementById('scheduleThead');
+            const tbody = document.getElementById('scheduleTbody');
+            const label = document.getElementById('scheduleWeekLabel');
+
+            const endOfWeek = new Date(currentScheduleDate);
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+            label.textContent = `${formatDateDisplay(currentScheduleDate)} - ${formatDateDisplay(endOfWeek)}`;
+
+            // בנית כותרות הטבלה
+            thead.innerHTML = '';
+            const trHead = document.createElement('tr');
+            trHead.innerHTML = `<th class="px-4 py-4 font-bold border-l border-slate-200 w-32 sticky right-0 bg-slate-50 shadow-[1px_0_0_0_#e2e8f0] z-10">משמרת</th>`;
+            
+            for(let i=0; i<7; i++) {
+                const currentDate = new Date(currentScheduleDate);
+                currentDate.setDate(currentDate.getDate() + i);
+                const isToday = formatDateKey(currentDate) === formatDateKey(new Date());
+                
+                trHead.innerHTML += `
+                    <th class="px-2 py-4 border-l border-slate-200 text-center min-w-[140px] ${isToday ? 'bg-primary-50 text-primary-700' : ''}">
+                        <div class="font-bold text-base">${dayNames[i]}</div>
+                        <div class="text-xs font-normal opacity-70 mt-1">${formatDateDisplay(currentDate)}</div>
+                    </th>
+                `;
+            }
+            thead.appendChild(trHead);
+
+            // בניית גוף הטבלה
+            tbody.innerHTML = '';
+            shifts.forEach(shift => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50 transition-colors';
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-5 font-bold border-l border-slate-100 sticky right-0 bg-white shadow-[1px_0_0_0_#f1f5f9] z-10">
+                        <div class="flex items-center gap-2 text-slate-800">
+                            <div class="p-1.5 bg-slate-100 rounded-lg text-slate-600"><i data-lucide="${shift.icon}" class="w-4 h-4"></i></div>
+                            ${shift.name}
+                        </div>
+                        <div class="text-xs text-slate-400 font-normal mt-1 mr-9">${shift.time}</div>
+                    </td>
+                `;
+
+                for(let i=0; i<7; i++) {
+                    const currentDate = new Date(currentScheduleDate);
+                    currentDate.setDate(currentDate.getDate() + i);
+                    const dateKey = formatDateKey(currentDate);
+                    const shiftFullKey = `${dateKey}_${shift.id}`;
+                    const currentAssigned = db.schedule[shiftFullKey] || '';
+                    
+                    let hasConflict = false;
+                    if (currentAssigned && db.constraints[currentAssigned] && db.constraints[currentAssigned].includes(shiftFullKey)) {
+                        hasConflict = true;
+                    }
+
+                    const td = document.createElement('td');
+                    td.className = `p-3 border-l border-slate-100 align-top transition-colors ${hasConflict ? 'bg-red-50/50' : currentAssigned ? 'bg-emerald-50/30' : ''}`;
+                    
+                    const select = document.createElement('select');
+                    select.className = `w-full p-2.5 text-sm rounded-xl border outline-none transition-all shadow-sm cursor-pointer
+                        ${hasConflict ? 'border-red-300 text-red-700 bg-red-50 focus:ring-2 focus:ring-red-200' : 
+                          currentAssigned ? 'border-emerald-200 text-emerald-800 bg-emerald-50 focus:ring-2 focus:ring-emerald-200' : 
+                          'border-slate-200 text-slate-700 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 hover:border-slate-300'}`;
+                    
+                    select.onchange = (e) => updateSchedule(shiftFullKey, e.target.value);
+
+                    let optionsHtml = `<option value="">-- פנוי --</option>`;
+                    employees.forEach(emp => {
+                        const empHasConstraint = db.constraints[emp] && db.constraints[emp].includes(shiftFullKey);
+                        const selected = currentAssigned === emp ? 'selected' : '';
+                        const constraintMark = empHasConstraint ? ' ❌ (אילוץ)' : '';
+                        optionsHtml += `<option value="${emp}" ${selected}>${emp}${constraintMark}</option>`;
+                    });
+                    select.innerHTML = optionsHtml;
+                    
+                    td.appendChild(select);
+
+                    if (hasConflict) {
+                        const warning = document.createElement('div');
+                        warning.className = 'text-xs text-red-600 mt-2 font-medium flex items-center gap-1 justify-center bg-red-100/50 py-1 rounded-md';
+                        warning.innerHTML = `<i data-lucide="alert-circle" class="w-3 h-3"></i> אילוץ מוזן`;
+                        td.appendChild(warning);
+                    }
+
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateSchedule(shiftFullKey, employee) {
+            if (employee === '') {
+                delete db.schedule[shiftFullKey];
+            } else {
+                db.schedule[shiftFullKey] = employee;
+            }
+            saveData();
+            renderSchedule();
+            lucide.createIcons();
+            showToast('השיבוץ עודכן בהצלחה');
+        }
+
+        // --- Calendar Logic ---
+        function changeCalendarMonth(offset) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
+            renderCalendar();
+            lucide.createIcons();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const label = document.getElementById('calendarMonthLabel');
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            label.textContent = `${monthNames[month]} ${year}`;
+
+            // הסרת התאים הקודמים (משאיר רק את ה-7 כותרות הראשונות)
+            while (grid.children.length > 7) {
+                grid.removeChild(grid.lastChild);
+            }
+
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // תאים ריקים לתחילת החודש
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'bg-slate-50 min-h-[120px] p-2';
+                grid.appendChild(emptyCell);
+            }
+
+            // ימי החודש
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateKey = formatDateKey(date);
+                const isToday = dateKey === formatDateKey(new Date());
+
+                const cell = document.createElement('div');
+                cell.className = `min-h-[120px] p-2 bg-white flex flex-col gap-1 hover:bg-slate-50 transition cursor-default ${isToday ? 'ring-2 ring-inset ring-primary-500' : ''}`;
+                
+                // כותרת היום
+                const dayHeader = document.createElement('div');
+                dayHeader.className = `text-sm font-semibold mb-2 ${isToday ? 'text-primary-600 bg-primary-50 w-8 h-8 rounded-full flex items-center justify-center' : 'text-slate-500'}`;
+                dayHeader.textContent = day;
+                cell.appendChild(dayHeader);
+
+                // הוספת שיבוצים
+                shifts.forEach(shift => {
+                    const shiftFullKey = `${dateKey}_${shift.id}`;
+                    const assigned = db.schedule[shiftFullKey];
+                    
+                    if (assigned) {
+                        const shiftDiv = document.createElement('div');
+                        let bgColor = 'bg-slate-100 text-slate-700';
+                        if (shift.id === 'morning') bgColor = 'bg-amber-50 text-amber-700 border border-amber-100';
+                        if (shift.id === 'afternoon') bgColor = 'bg-orange-50 text-orange-700 border border-orange-100';
+                        if (shift.id === 'night') bgColor = 'bg-indigo-50 text-indigo-700 border border-indigo-100';
+                        
+                        // בדיקת התנגשות בלוח השנה
+                        if (db.constraints[assigned] && db.constraints[assigned].includes(shiftFullKey)) {
+                             bgColor = 'bg-red-100 text-red-800 border border-red-200 font-bold';
+                        }
+
+                        shiftDiv.className = `text-xs p-1.5 rounded-md flex items-center justify-between ${bgColor}`;
+                        shiftDiv.innerHTML = `
+                            <span class="truncate pr-1">${assigned}</span>
+                            <i data-lucide="${shift.icon}" class="w-3 h-3 opacity-70"></i>
+                        `;
+                        cell.appendChild(shiftDiv);
+                    }
+                });
+
+                grid.appendChild(cell);
+            }
+            
+            // השלמת תאים ריקים לסוף הרשת
+            const totalCells = firstDayOfMonth + daysInMonth;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'bg-slate-50 min-h-[120px] p-2';
+                grid.appendChild(emptyCell);
+            }
+        }
+
+        // --- Modals Logic ---
+        function showClearDataModal() {
+            const modal = document.getElementById('clearDataModal');
+            const content = document.getElementById('clearDataModalContent');
+            modal.classList.remove('hidden');
+            
+            // אנימציה פנימה
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideClearDataModal() {
+            const modal = document.getElementById('clearDataModal');
+            const content = document.getElementById('clearDataModalContent');
+            
+            // אנימציה החוצה
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function executeClearData() {
+            localStorage.removeItem('shift_manager_pro');
+            db = { constraints: {}, schedule: {} };
+            updateAllViews();
+            hideClearDataModal();
+            showToast('המערכת אופסה בהצלחה');
+        }
+
+        // Start
+        window.onload = init;
+    </script>
+</body>
+</html>
