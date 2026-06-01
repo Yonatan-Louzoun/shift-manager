@@ -3,34 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול משמרות Pro</title>
+    <title>ניהול משמרות Pro - צוות אונליין</title>
     
-    <!-- פונט Rubik מגוגל פונטס -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- אייקונים של Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Rubik', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Rubik', 'sans-serif'] },
                     colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
                     }
                 }
             }
@@ -38,99 +27,64 @@
     </script>
 
     <style>
-        body {
-            background-color: #f8fafc;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        .tab-btn {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-active {
-            color: #2563eb;
-            font-weight: 600;
-        }
-        
-        .tab-active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: #3b82f6;
-            border-radius: 3px 3px 0 0;
-        }
-        
-        .tab-inactive {
-            color: #64748b;
-        }
-        
-        .tab-inactive:hover {
-            color: #334155;
-        }
-
-        /* עיצוב פס גלילה */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-
-        .toast-enter {
-            transform: translateY(100%);
-            opacity: 0;
-        }
-        .toast-enter-active {
-            transform: translateY(0);
-            opacity: 1;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .toast-exit {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .toast-exit-active {
-            transform: translateY(100%);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        body { background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        .tab-btn { position: relative; transition: all 0.3s ease; }
+        .tab-active { color: #2563eb; font-weight: 600; }
+        .tab-active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background-color: #3b82f6; border-radius: 3px 3px 0 0; }
+        .tab-inactive { color: #64748b; }
+        .tab-inactive:hover { color: #334155; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
-</head>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDhvtXHqwcUwTKS8C4CG1iAZbeD0_sTi9M",
+            authDomain: "shift-manager-307be.firebaseapp.com",
+            databaseURL: "https://shift-manager-307be-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "shift-manager-307be",
+            storageBucket: "shift-manager-307be.firebasestorage.app",
+            messagingSenderId: "765565304046",
+            appId: "1:765565304046:web:032581317794a9645cc7ff",
+            measurementId: "G-TRN892BWHX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // הפיכת פונקציות מסד הנתונים לזמינות לשאר האתר
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+        window.database = database;
+    </script>
+    </head>
 <body class="text-slate-800">
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
         
-        <!-- Header -->
         <header class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-4">
-                <div class="bg-primary-50 p-3 rounded-xl text-primary-600">
+                <div class="bg-primary-50 p-3 rounded-xl text-primary-600 relative">
                     <i data-lucide="calendar-clock" class="w-8 h-8"></i>
+                    <span class="absolute top-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></span>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">מערכת משמרות חכמה</h1>
-                    <p class="text-slate-500 text-sm mt-1">ניהול שיבוצים מבוסס תאריכים</p>
+                    <h1 class="text-2xl font-bold text-slate-900">מערכת משמרות משותפת</h1>
+                    <p class="text-slate-500 text-sm mt-1">מסונכרן בזמן אמת לכל חברי הצוות</p>
                 </div>
             </div>
             <button onclick="showClearDataModal()" class="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl transition font-medium">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
-                איפוס מערכת
+                איפוס מערכת בענן
             </button>
         </header>
 
-        <!-- Tabs Navigation -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-6 pt-4 mb-8 flex gap-8 border-b-2 overflow-x-auto">
             <button onclick="switchTab('constraints')" id="tab-constraints" class="tab-btn tab-active pb-4 px-2 text-lg flex items-center gap-2 whitespace-nowrap">
                 <i data-lucide="user-x" class="w-5 h-5"></i>
@@ -146,11 +100,8 @@
             </button>
         </div>
 
-        <!-- תצוגה 1: אילוצים -->
-        <section id="view-constraints" class="block animate-fade-in">
+        <section id="view-constraints" class="block">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-                
-                <!-- Week Navigator & Employee Select -->
                 <div class="flex flex-col lg:flex-row justify-between items-center mb-8 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <div class="w-full lg:w-1/3">
                         <label class="block text-sm font-medium text-slate-700 mb-2">בחר עובד להזנת אילוצים:</label>
@@ -158,7 +109,6 @@
                             <option value="" disabled selected>-- בחר עובד --</option>
                         </select>
                     </div>
-
                     <div class="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
                         <button onclick="changeConstraintsWeek(-1)" class="p-2 hover:bg-slate-100 rounded-lg transition text-slate-600">
                             <i data-lucide="chevron-right" class="w-5 h-5"></i>
@@ -179,23 +129,13 @@
                 </div>
 
                 <div id="constraintsArea" class="hidden">
-                    <p class="text-slate-600 mb-6 flex items-center gap-2">
-                        <i data-lucide="info" class="w-4 h-4 text-primary-500"></i>
-                        סמן את המשמרות בהן <span class="font-bold text-red-500">לא ניתן</span> לעבוד השבוע:
-                    </p>
-                    
-                    <div id="constraintsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-                        <!-- יוצר דינמית -->
-                    </div>
+                    <div id="constraintsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4"></div>
                 </div>
-
             </div>
         </section>
 
-        <!-- תצוגה 2: שיבוץ שבועי -->
-        <section id="view-schedule" class="hidden animate-fade-in">
+        <section id="view-schedule" class="hidden">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-                
                 <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <div class="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
                         <button onclick="changeScheduleWeek(-1)" class="p-2 hover:bg-white rounded-lg shadow-sm transition text-slate-600 border border-transparent hover:border-slate-200">
@@ -208,31 +148,19 @@
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </button>
                     </div>
-
-                    <div class="flex gap-4 text-sm bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-400"></span> התנגשות אילוץ</span>
-                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-400"></span> שובץ</span>
-                    </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
                     <table class="w-full text-right text-sm">
-                        <thead class="bg-slate-50 text-slate-700 border-b border-slate-200" id="scheduleThead">
-                            <!-- יוצר דינמית -->
-                        </thead>
-                        <tbody id="scheduleTbody" class="divide-y divide-slate-100">
-                            <!-- יוצר דינמית -->
-                        </tbody>
+                        <thead class="bg-slate-50 text-slate-700 border-b border-slate-200" id="scheduleThead"></thead>
+                        <tbody id="scheduleTbody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
-
             </div>
         </section>
 
-        <!-- תצוגה 3: לוח שנה חודשי -->
-        <section id="view-calendar" class="hidden animate-fade-in">
+        <section id="view-calendar" class="hidden">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-                
                 <div class="flex justify-between items-center mb-8 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <button onclick="changeCalendarMonth(-1)" class="flex items-center gap-2 px-4 py-2 hover:bg-white rounded-lg shadow-sm transition text-slate-700 border border-transparent hover:border-slate-200">
                         <i data-lucide="chevron-right" class="w-4 h-4"></i> חודש קודם
@@ -242,41 +170,26 @@
                         חודש הבא <i data-lucide="chevron-left" class="w-4 h-4"></i>
                     </button>
                 </div>
-
-                <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden shadow-sm" id="calendarGrid">
-                    <!-- כותרות ימים -->
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">ראשון</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שני</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שלישי</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">רביעי</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">חמישי</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שישי</div>
-                    <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שבת</div>
-                    
-                    <!-- תאים ייוצרו דינמית -->
-                </div>
-
+                <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden shadow-sm" id="calendarGrid"></div>
             </div>
         </section>
 
     </div>
 
-    <!-- מודאל מחיקת נתונים -->
     <div id="clearDataModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity opacity-0">
         <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300" id="clearDataModalContent">
             <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl font-bold text-center text-slate-900 mb-2">איפוס מערכת</h3>
-            <p class="text-slate-500 text-center mb-8">האם אתה בטוח שברצונך למחוק את כל האילוצים והשיבוצים? הפעולה מוחקת את כל ההיסטוריה ולא ניתנת לביטול.</p>
+            <h3 class="text-xl font-bold text-center text-slate-900 mb-2">איפוס מערכת בענן</h3>
+            <p class="text-slate-500 text-center mb-8">הפעולה תמחק את כל האילוצים והשיבוצים לכל חברי הצוות ולא ניתנת לביטול.</p>
             <div class="flex gap-4">
                 <button onclick="hideClearDataModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">ביטול</button>
-                <button onclick="executeClearData()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition shadow-sm">כן, מחק הכל</button>
+                <button onclick="executeClearData()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition shadow-sm">כן, מחק לכולם</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden transition-all duration-300 transform translate-y-full opacity-0">
         <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
         <span id="toastMsg" class="font-medium"></span>
@@ -285,40 +198,49 @@
     <script>
         // --- Data & Constants ---
         const employees = ['שירה', 'בר', 'שי', 'מיקה', 'אגם', 'עמוס', 'יצחק', 'עומר', 'יובל', 'מיכאל'];
-        
         const shifts = [
             { id: 'morning', name: 'בוקר', time: '07:00-15:00', icon: 'sunrise' },
             { id: 'afternoon', name: 'צהריים', time: '15:00-23:00', icon: 'sun' },
             { id: 'night', name: 'לילה', time: '23:00-07:00', icon: 'moon' }
         ];
-        
         const dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
         // --- State ---
         let db = { constraints: {}, schedule: {} };
-        let currentConstraintsDate = new Date();
-        let currentScheduleDate = new Date();
-        let currentCalendarDate = new Date();
+        let currentConstraintsDate = getStartOfWeek(new Date());
+        let currentScheduleDate = getStartOfWeek(new Date());
+        let currentCalendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+        // --- Firebase Sync Methods ---
+        function saveData() {
+            if (window.dbSet && window.dbRef && window.database) {
+                window.dbSet(window.dbRef(window.database, 'shift_data'), db);
+            }
+        }
+
+        function listenForChanges() {
+            if (window.dbOnValue && window.dbRef && window.database) {
+                const dataRef = window.dbRef(window.database, 'shift_data');
+                window.dbOnValue(dataRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        db = data; 
+                    } else {
+                        db = { constraints: {}, schedule: {} };
+                    }
+                    updateAllViews(); 
+                });
+            }
+        }
 
         // --- Init ---
         function init() {
-            // התקנת אייקונים
             lucide.createIcons();
-
-            // טעינת נתונים
-            const saved = localStorage.getItem('shift_manager_pro');
-            if (saved) db = JSON.parse(saved);
-
-            // אתחול תאריכים לתחילת השבוע (יום ראשון)
-            currentConstraintsDate = getStartOfWeek(new Date());
-            currentScheduleDate = getStartOfWeek(new Date());
-            
-            // תאריך ללוח שנה (ראשון בחודש)
-            currentCalendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-
             populateEmployees();
-            updateAllViews();
+            
+            // במקום לטעון מהדפדפן, אנחנו מאזינים לענן
+            listenForChanges();
         }
 
         // --- Utils ---
@@ -341,24 +263,15 @@
             return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        function saveData() {
-            localStorage.setItem('shift_manager_pro', JSON.stringify(db));
-        }
-
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').textContent = msg;
             toast.classList.remove('hidden');
-            
-            // Trigger animation
-            setTimeout(() => {
-                toast.classList.remove('translate-y-full', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('translate-y-full', 'opacity-0');
                 setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 3000);
+            }, 2500);
         }
 
         // --- UI Navigation ---
@@ -367,10 +280,8 @@
                 document.getElementById(`tab-${t}`).className = 'tab-btn tab-inactive pb-4 px-2 text-lg flex items-center gap-2 whitespace-nowrap';
                 document.getElementById(`view-${t}`).classList.add('hidden');
             });
-            
             document.getElementById(`tab-${tabId}`).className = 'tab-btn tab-active pb-4 px-2 text-lg flex items-center gap-2 whitespace-nowrap';
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
-
             updateAllViews();
         }
 
@@ -378,7 +289,7 @@
             if (!document.getElementById('view-constraints').classList.contains('hidden')) renderConstraints();
             if (!document.getElementById('view-schedule').classList.contains('hidden')) renderSchedule();
             if (!document.getElementById('view-calendar').classList.contains('hidden')) renderCalendar();
-            lucide.createIcons(); // רענון אייקונים לאלמנטים שנוצרו דינמית
+            lucide.createIcons();
         }
 
         // --- Constraints Logic ---
@@ -405,7 +316,6 @@
             const grid = document.getElementById('constraintsGrid');
             const label = document.getElementById('constraintsWeekLabel');
 
-            // כותרת תאריכים
             const endOfWeek = new Date(currentConstraintsDate);
             endOfWeek.setDate(endOfWeek.getDate() + 6);
             label.textContent = `${formatDateDisplay(currentConstraintsDate)} - ${formatDateDisplay(endOfWeek)}`;
@@ -430,7 +340,6 @@
                 const dayCard = document.createElement('div');
                 dayCard.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col';
                 
-                // האם היום?
                 const isToday = dateKey === formatDateKey(new Date());
                 const headerClass = isToday ? 'bg-primary-50 border-b border-primary-100' : 'bg-slate-50 border-b border-slate-200';
                 
@@ -454,7 +363,7 @@
                     label.innerHTML = `
                         <input type="checkbox" class="w-4 h-4 text-red-500 rounded border-slate-300 focus:ring-red-500 ml-3" 
                             ${isChecked ? 'checked' : ''} 
-                            onchange="toggleConstraint('${emp}', '${shiftFullKey}', this.checked, this.parentElement)">
+                            onchange="toggleConstraint('${emp}', '${shiftFullKey}', this.checked)">
                         <div class="flex-1">
                             <div class="text-sm font-semibold ${isChecked ? 'text-red-700' : 'text-slate-700'} flex items-center gap-1">
                                 <i data-lucide="${shift.icon}" class="w-3 h-3"></i> ${shift.name}
@@ -463,22 +372,18 @@
                     `;
                     shiftsContainer.appendChild(label);
                 });
-
                 grid.appendChild(dayCard);
             }
         }
 
-        function toggleConstraint(emp, shiftFullKey, isChecked, labelElement) {
+        function toggleConstraint(emp, shiftFullKey, isChecked) {
+            if (!db.constraints) db.constraints = {};
             if (!db.constraints[emp]) db.constraints[emp] = [];
             
             if (isChecked) {
                 if (!db.constraints[emp].includes(shiftFullKey)) db.constraints[emp].push(shiftFullKey);
-                labelElement.className = 'flex items-center p-2 rounded-lg cursor-pointer transition border bg-red-50 border-red-200';
-                labelElement.querySelector('.font-semibold').className = 'text-sm font-semibold text-red-700 flex items-center gap-1';
             } else {
                 db.constraints[emp] = db.constraints[emp].filter(k => k !== shiftFullKey);
-                labelElement.className = 'flex items-center p-2 rounded-lg cursor-pointer transition border bg-white border-slate-100 hover:bg-slate-50';
-                labelElement.querySelector('.font-semibold').className = 'text-sm font-semibold text-slate-700 flex items-center gap-1';
             }
             saveData();
         }
@@ -499,7 +404,6 @@
             endOfWeek.setDate(endOfWeek.getDate() + 6);
             label.textContent = `${formatDateDisplay(currentScheduleDate)} - ${formatDateDisplay(endOfWeek)}`;
 
-            // בנית כותרות הטבלה
             thead.innerHTML = '';
             const trHead = document.createElement('tr');
             trHead.innerHTML = `<th class="px-4 py-4 font-bold border-l border-slate-200 w-32 sticky right-0 bg-slate-50 shadow-[1px_0_0_0_#e2e8f0] z-10">משמרת</th>`;
@@ -518,7 +422,6 @@
             }
             thead.appendChild(trHead);
 
-            // בניית גוף הטבלה
             tbody.innerHTML = '';
             shifts.forEach(shift => {
                 const tr = document.createElement('tr');
@@ -539,10 +442,12 @@
                     currentDate.setDate(currentDate.getDate() + i);
                     const dateKey = formatDateKey(currentDate);
                     const shiftFullKey = `${dateKey}_${shift.id}`;
+                    
+                    if (!db.schedule) db.schedule = {};
                     const currentAssigned = db.schedule[shiftFullKey] || '';
                     
                     let hasConflict = false;
-                    if (currentAssigned && db.constraints[currentAssigned] && db.constraints[currentAssigned].includes(shiftFullKey)) {
+                    if (currentAssigned && db.constraints && db.constraints[currentAssigned] && db.constraints[currentAssigned].includes(shiftFullKey)) {
                         hasConflict = true;
                     }
 
@@ -559,7 +464,7 @@
 
                     let optionsHtml = `<option value="">-- פנוי --</option>`;
                     employees.forEach(emp => {
-                        const empHasConstraint = db.constraints[emp] && db.constraints[emp].includes(shiftFullKey);
+                        const empHasConstraint = db.constraints && db.constraints[emp] && db.constraints[emp].includes(shiftFullKey);
                         const selected = currentAssigned === emp ? 'selected' : '';
                         const constraintMark = empHasConstraint ? ' ❌ (אילוץ)' : '';
                         optionsHtml += `<option value="${emp}" ${selected}>${emp}${constraintMark}</option>`;
@@ -574,7 +479,6 @@
                         warning.innerHTML = `<i data-lucide="alert-circle" class="w-3 h-3"></i> אילוץ מוזן`;
                         td.appendChild(warning);
                     }
-
                     tr.appendChild(td);
                 }
                 tbody.appendChild(tr);
@@ -582,15 +486,14 @@
         }
 
         function updateSchedule(shiftFullKey, employee) {
+            if (!db.schedule) db.schedule = {};
             if (employee === '') {
                 delete db.schedule[shiftFullKey];
             } else {
                 db.schedule[shiftFullKey] = employee;
             }
             saveData();
-            renderSchedule();
-            lucide.createIcons();
-            showToast('השיבוץ עודכן בהצלחה');
+            showToast('השיבוץ הסתנכרן לענן');
         }
 
         // --- Calendar Logic ---
@@ -603,28 +506,31 @@
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const label = document.getElementById('calendarMonthLabel');
-            
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
             
             label.textContent = `${monthNames[month]} ${year}`;
 
-            // הסרת התאים הקודמים (משאיר רק את ה-7 כותרות הראשונות)
-            while (grid.children.length > 7) {
-                grid.removeChild(grid.lastChild);
-            }
+            // Reset grid
+            grid.innerHTML = `
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">ראשון</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שני</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שלישי</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">רביעי</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">חמישי</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שישי</div>
+                <div class="bg-slate-50 py-3 text-center font-semibold text-slate-700">שבת</div>
+            `;
 
             const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            // תאים ריקים לתחילת החודש
             for (let i = 0; i < firstDayOfMonth; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = 'bg-slate-50 min-h-[120px] p-2';
                 grid.appendChild(emptyCell);
             }
 
-            // ימי החודש
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const dateKey = formatDateKey(date);
@@ -633,42 +539,34 @@
                 const cell = document.createElement('div');
                 cell.className = `min-h-[120px] p-2 bg-white flex flex-col gap-1 hover:bg-slate-50 transition cursor-default ${isToday ? 'ring-2 ring-inset ring-primary-500' : ''}`;
                 
-                // כותרת היום
                 const dayHeader = document.createElement('div');
                 dayHeader.className = `text-sm font-semibold mb-2 ${isToday ? 'text-primary-600 bg-primary-50 w-8 h-8 rounded-full flex items-center justify-center' : 'text-slate-500'}`;
                 dayHeader.textContent = day;
                 cell.appendChild(dayHeader);
 
-                // הוספת שיבוצים
                 shifts.forEach(shift => {
                     const shiftFullKey = `${dateKey}_${shift.id}`;
-                    const assigned = db.schedule[shiftFullKey];
-                    
-                    if (assigned) {
+                    if(db.schedule && db.schedule[shiftFullKey]) {
+                        const assigned = db.schedule[shiftFullKey];
                         const shiftDiv = document.createElement('div');
+                        
                         let bgColor = 'bg-slate-100 text-slate-700';
                         if (shift.id === 'morning') bgColor = 'bg-amber-50 text-amber-700 border border-amber-100';
                         if (shift.id === 'afternoon') bgColor = 'bg-orange-50 text-orange-700 border border-orange-100';
                         if (shift.id === 'night') bgColor = 'bg-indigo-50 text-indigo-700 border border-indigo-100';
                         
-                        // בדיקת התנגשות בלוח השנה
-                        if (db.constraints[assigned] && db.constraints[assigned].includes(shiftFullKey)) {
+                        if (db.constraints && db.constraints[assigned] && db.constraints[assigned].includes(shiftFullKey)) {
                              bgColor = 'bg-red-100 text-red-800 border border-red-200 font-bold';
                         }
 
                         shiftDiv.className = `text-xs p-1.5 rounded-md flex items-center justify-between ${bgColor}`;
-                        shiftDiv.innerHTML = `
-                            <span class="truncate pr-1">${assigned}</span>
-                            <i data-lucide="${shift.icon}" class="w-3 h-3 opacity-70"></i>
-                        `;
+                        shiftDiv.innerHTML = `<span class="truncate pr-1">${assigned}</span><i data-lucide="${shift.icon}" class="w-3 h-3 opacity-70"></i>`;
                         cell.appendChild(shiftDiv);
                     }
                 });
-
                 grid.appendChild(cell);
             }
             
-            // השלמת תאים ריקים לסוף הרשת
             const totalCells = firstDayOfMonth + daysInMonth;
             const remainingCells = (7 - (totalCells % 7)) % 7;
             for (let i = 0; i < remainingCells; i++) {
@@ -683,33 +581,23 @@
             const modal = document.getElementById('clearDataModal');
             const content = document.getElementById('clearDataModalContent');
             modal.classList.remove('hidden');
-            
-            // אנימציה פנימה
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
         }
 
         function hideClearDataModal() {
             const modal = document.getElementById('clearDataModal');
             const content = document.getElementById('clearDataModalContent');
-            
-            // אנימציה החוצה
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function executeClearData() {
-            localStorage.removeItem('shift_manager_pro');
             db = { constraints: {}, schedule: {} };
+            saveData(); // שלח ענן ריק
             updateAllViews();
             hideClearDataModal();
-            showToast('המערכת אופסה בהצלחה');
+            showToast('כל הנתונים בענן נמחקו בהצלחה');
         }
 
         // Start
