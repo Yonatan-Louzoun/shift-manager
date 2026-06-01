@@ -79,10 +79,6 @@
                     <p class="text-slate-500 text-sm mt-1">מסונכרן בזמן אמת לכל חברי הצוות</p>
                 </div>
             </div>
-            <button onclick="showClearDataModal()" class="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl transition font-medium">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                איפוס מערכת בענן
-            </button>
         </header>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-6 pt-4 mb-8 flex gap-8 border-b-2 overflow-x-auto">
@@ -174,20 +170,6 @@
             </div>
         </section>
 
-    </div>
-
-    <div id="clearDataModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity opacity-0">
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300" id="clearDataModalContent">
-            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-xl font-bold text-center text-slate-900 mb-2">איפוס מערכת בענן</h3>
-            <p class="text-slate-500 text-center mb-8">הפעולה תמחק את כל האילוצים והשיבוצים לכל חברי הצוות ולא ניתנת לביטול.</p>
-            <div class="flex gap-4">
-                <button onclick="hideClearDataModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">ביטול</button>
-                <button onclick="executeClearData()" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition shadow-sm">כן, מחק לכולם</button>
-            </div>
-        </div>
     </div>
 
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden transition-all duration-300 transform translate-y-full opacity-0">
@@ -330,7 +312,7 @@
             area.classList.remove('hidden');
             grid.innerHTML = '';
 
-            const empConstraints = db.constraints[emp] || [];
+            const empConstraints = (db.constraints && db.constraints[emp]) || [];
 
             for (let i = 0; i < 7; i++) {
                 const currentDate = new Date(currentConstraintsDate);
@@ -564,6 +546,50 @@
                         cell.appendChild(shiftDiv);
                     }
                 });
+
+                // הצגת אילוצים בלוח השנה בתחתית התא
+                const constraintsByEmp = {};
+                employees.forEach(emp => {
+                    const empShifts = [];
+                    shifts.forEach(shift => {
+                        const shiftFullKey = `${dateKey}_${shift.id}`;
+                        if (db.constraints && db.constraints[emp] && db.constraints[emp].includes(shiftFullKey)) {
+                            empShifts.push(shift.name.charAt(0) + "'");
+                        }
+                    });
+                    if (empShifts.length > 0) {
+                        constraintsByEmp[emp] = empShifts;
+                    }
+                });
+                
+                const empNames = Object.keys(constraintsByEmp);
+                if (empNames.length > 0) {
+                    const constraintsWrapper = document.createElement('div');
+                    constraintsWrapper.className = 'mt-auto pt-2 border-t border-slate-100 flex flex-col gap-1';
+                    
+                    const constraintsTitle = document.createElement('div');
+                    constraintsTitle.className = 'text-[10px] text-slate-400 font-medium mb-0.5';
+                    constraintsTitle.textContent = 'אילוצים:';
+                    constraintsWrapper.appendChild(constraintsTitle);
+                    
+                    empNames.forEach(emp => {
+                        const empShifts = constraintsByEmp[emp];
+                        const shiftsText = empShifts.length === shifts.length ? 'הכל' : empShifts.join(',');
+                        const cDiv = document.createElement('div');
+                        cDiv.className = 'text-[10px] px-1.5 py-1 rounded bg-slate-50 text-slate-600 border border-slate-200 flex items-center justify-between w-full';
+                        cDiv.innerHTML = `
+                            <div class="flex items-center gap-1.5 truncate">
+                                <i data-lucide="user-x" class="w-3 h-3 text-red-400 shrink-0"></i>
+                                <span class="truncate">${emp}</span>
+                            </div>
+                            <span class="text-[9px] text-slate-400 font-medium shrink-0 mr-1">${shiftsText}</span>
+                        `;
+                        constraintsWrapper.appendChild(cDiv);
+                    });
+                    
+                    cell.appendChild(constraintsWrapper);
+                }
+
                 grid.appendChild(cell);
             }
             
@@ -574,30 +600,6 @@
                 emptyCell.className = 'bg-slate-50 min-h-[120px] p-2';
                 grid.appendChild(emptyCell);
             }
-        }
-
-        // --- Modals Logic ---
-        function showClearDataModal() {
-            const modal = document.getElementById('clearDataModal');
-            const content = document.getElementById('clearDataModalContent');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
-        }
-
-        function hideClearDataModal() {
-            const modal = document.getElementById('clearDataModal');
-            const content = document.getElementById('clearDataModalContent');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        function executeClearData() {
-            db = { constraints: {}, schedule: {} };
-            saveData(); // שלח ענן ריק
-            updateAllViews();
-            hideClearDataModal();
-            showToast('כל הנתונים בענן נמחקו בהצלחה');
         }
 
         // Start
