@@ -94,6 +94,10 @@
                 <i data-lucide="calendar-days" class="w-5 h-5"></i>
                 לוח שנה חודשי
             </button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn tab-inactive pb-4 px-2 text-lg flex items-center gap-2 whitespace-nowrap">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                סטטיסטיקה
+            </button>
         </div>
 
         <section id="view-constraints" class="block">
@@ -170,6 +174,34 @@
             </div>
         </section>
 
+        <section id="view-stats" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="flex justify-between items-center mb-8 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <button onclick="changeStatsMonth(-1)" class="flex items-center gap-2 px-4 py-2 hover:bg-white rounded-lg shadow-sm transition text-slate-700 border border-transparent hover:border-slate-200">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i> חודש קודם
+                    </button>
+                    <h2 class="text-xl font-bold text-slate-800" id="statsMonthLabel"></h2>
+                    <button onclick="changeStatsMonth(1)" class="flex items-center gap-2 px-4 py-2 hover:bg-white rounded-lg shadow-sm transition text-slate-700 border border-transparent hover:border-slate-200">
+                        חודש הבא <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-slate-50 text-slate-700 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-4 font-bold border-l border-slate-200 w-1/4">איש צוות</th>
+                                <th class="px-4 py-4 font-bold border-l border-slate-200 text-center w-1/4">סה"כ משמרות בחודש</th>
+                                <th class="px-4 py-4 font-bold border-l border-slate-200 text-center w-1/4">משמרות לילה</th>
+                                <th class="px-4 py-4 font-bold text-center w-1/4">משמרות סופ"ש (שישי-שבת)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTbody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
     </div>
 
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 hidden transition-all duration-300 transform translate-y-full opacity-0">
@@ -193,6 +225,7 @@
         let currentConstraintsDate = getStartOfWeek(new Date());
         let currentScheduleDate = getStartOfWeek(new Date());
         let currentCalendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        let currentStatsDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
         // --- Firebase Sync Methods ---
         function saveData() {
@@ -258,7 +291,7 @@
 
         // --- UI Navigation ---
         function switchTab(tabId) {
-            ['constraints', 'schedule', 'calendar'].forEach(t => {
+            ['constraints', 'schedule', 'calendar', 'stats'].forEach(t => {
                 document.getElementById(`tab-${t}`).className = 'tab-btn tab-inactive pb-4 px-2 text-lg flex items-center gap-2 whitespace-nowrap';
                 document.getElementById(`view-${t}`).classList.add('hidden');
             });
@@ -271,6 +304,7 @@
             if (!document.getElementById('view-constraints').classList.contains('hidden')) renderConstraints();
             if (!document.getElementById('view-schedule').classList.contains('hidden')) renderSchedule();
             if (!document.getElementById('view-calendar').classList.contains('hidden')) renderCalendar();
+            if (!document.getElementById('view-stats').classList.contains('hidden')) renderStats();
             lucide.createIcons();
         }
 
@@ -600,6 +634,69 @@
                 emptyCell.className = 'bg-slate-50 min-h-[120px] p-2';
                 grid.appendChild(emptyCell);
             }
+        }
+
+        // --- Stats Logic ---
+        function changeStatsMonth(offset) {
+            currentStatsDate.setMonth(currentStatsDate.getMonth() + offset);
+            renderStats();
+            lucide.createIcons();
+        }
+
+        function renderStats() {
+            const tbody = document.getElementById('statsTbody');
+            const label = document.getElementById('statsMonthLabel');
+            const year = currentStatsDate.getFullYear();
+            const month = currentStatsDate.getMonth();
+            
+            label.textContent = `${monthNames[month]} ${year}`;
+            tbody.innerHTML = '';
+
+            // יצירת אובייקט לאיסוף הנתונים לכל עובד
+            const stats = {};
+            employees.forEach(emp => {
+                stats[emp] = { total: 0, nights: 0, weekends: 0 };
+            });
+
+            // ריצה על כל ימי החודש ובדיקת המשמרות
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateKey = formatDateKey(date);
+                const dayOfWeek = date.getDay(); // 5 = שישי, 6 = שבת
+
+                shifts.forEach(shift => {
+                    const shiftFullKey = `${dateKey}_${shift.id}`;
+                    if (db.schedule && db.schedule[shiftFullKey]) {
+                        const emp = db.schedule[shiftFullKey];
+                        if (stats[emp]) {
+                            stats[emp].total++;
+                            if (shift.id === 'night') stats[emp].nights++;
+                            if (dayOfWeek === 5 || dayOfWeek === 6) stats[emp].weekends++;
+                        }
+                    }
+                });
+            }
+
+            // ציור הטבלה
+            employees.forEach(emp => {
+                const s = stats[emp];
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+                
+                // עיצוב תנאי: אם המספר גדול מ-0 הוא מודגש עם רקע חלש, אם זה 0 הוא אפור ודהוי
+                const totalClass = s.total > 0 ? 'font-bold text-primary-700 bg-primary-50/50' : 'text-slate-400';
+                const nightsClass = s.nights > 0 ? 'font-semibold text-indigo-700 bg-indigo-50/50' : 'text-slate-400';
+                const weekendsClass = s.weekends > 0 ? 'font-semibold text-emerald-700 bg-emerald-50/50' : 'text-slate-400';
+
+                tr.innerHTML = `
+                    <td class="px-4 py-4 font-semibold text-slate-800 border-l border-slate-100">${emp}</td>
+                    <td class="px-4 py-4 text-center border-l border-slate-100 ${totalClass}">${s.total}</td>
+                    <td class="px-4 py-4 text-center border-l border-slate-100 ${nightsClass}">${s.nights}</td>
+                    <td class="px-4 py-4 text-center ${weekendsClass}">${s.weekends}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         // Start
